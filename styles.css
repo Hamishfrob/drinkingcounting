@@ -3,6 +3,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    background-color: #e6f3ff;  /* Light blue background */
 }
 
 h1 {
