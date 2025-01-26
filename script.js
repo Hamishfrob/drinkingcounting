@@ -7,7 +7,7 @@ function createCalendar() {
     dateHeader.className = 'header';
     dateHeader.textContent = 'Week';
     calendar.appendChild(dateHeader);
-    
+
     // Add day headers
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     days.forEach(day => {
@@ -106,8 +106,17 @@ function createCalendar() {
     yearTotal.className = 'year-total';
     calendar.appendChild(yearTotal);
     
-    // Load saved states and update totals
-    loadSavedStates().then(() => updateTotals());
+    // After all checkboxes are created, load saved states
+    const savedStates = getSavedStates();
+    Object.entries(savedStates).forEach(([id, checked]) => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+            checkbox.checked = checked;
+        }
+    });
+    
+    // Update totals after loading saved states
+    updateTotals();
 }
 
 function initFirebase() {
@@ -117,18 +126,15 @@ function initFirebase() {
     firebase.initializeApp(firebaseConfig);
 }
 
-async function saveCheckboxState(id, checked) {
-    try {
-        await fetch('your-api-endpoint/save', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id, checked })
-        });
-    } catch (error) {
-        console.error('Failed to save:', error);
-    }
+function saveCheckboxState(id, checked) {
+    const savedStates = getSavedStates();
+    savedStates[id] = checked;
+    localStorage.setItem('drinkingDays2025', JSON.stringify(savedStates));
+}
+
+function getSavedStates() {
+    const saved = localStorage.getItem('drinkingDays2025');
+    return saved ? JSON.parse(saved) : {};
 }
 
 async function loadSavedStates() {
