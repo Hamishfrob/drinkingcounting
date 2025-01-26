@@ -2,10 +2,11 @@ function createCalendar() {
     const calendar = document.getElementById('calendar');
     const year = 2025;
     
-    // Add empty corner cell
-    const cornerCell = document.createElement('div');
-    cornerCell.className = 'header';
-    calendar.appendChild(cornerCell);
+    // Add headers
+    const dateHeader = document.createElement('div');
+    dateHeader.className = 'header';
+    dateHeader.textContent = 'Week';
+    calendar.appendChild(dateHeader);
     
     // Add day headers
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -15,6 +16,12 @@ function createCalendar() {
         header.textContent = day;
         calendar.appendChild(header);
     });
+
+    // Add total header
+    const totalHeader = document.createElement('div');
+    totalHeader.className = 'header';
+    totalHeader.textContent = 'Total';
+    calendar.appendChild(totalHeader);
 
     // Get the first day of the year
     const firstDay = new Date(year, 0, 1);
@@ -33,49 +40,74 @@ function createCalendar() {
         lastSunday.setDate(lastSunday.getDate() + 1);
     }
     
-    // Create calendar days
+    let currentMonth = -1;
     const currentDate = new Date(firstMonday);
+    
+    let hasAddedHalfYear = false;
+    
     while (currentDate <= lastSunday) {
-        // Add date label at the start of each week
-        if (currentDate.getDay() === 1) {
+        if (currentDate.getDay() === 1) { // Start of week
+            const weekRow = document.createElement('div');
+            weekRow.className = 'week-row';
+            
+            // Add date label
             const dateLabel = document.createElement('div');
             dateLabel.className = 'date-label';
             dateLabel.textContent = currentDate.toLocaleDateString('en-US', { 
                 month: 'short', 
                 day: 'numeric'
             });
-            calendar.appendChild(dateLabel);
+            weekRow.appendChild(dateLabel);
+            
+            // Create 7 days
+            for (let i = 0; i < 7; i++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `day-${currentDate.toISOString().split('T')[0]}`;
+                
+                checkbox.addEventListener('change', function() {
+                    saveCheckboxState(this.id, this.checked);
+                    updateTotals();
+                });
+                
+                const checkboxVisual = document.createElement('span');
+                checkboxVisual.className = 'checkbox-visual';
+                
+                dayElement.appendChild(checkbox);
+                dayElement.appendChild(checkboxVisual);
+                weekRow.appendChild(dayElement);
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            // Add total cell for the week
+            const totalCell = document.createElement('div');
+            totalCell.className = 'total-cell';
+            weekRow.appendChild(totalCell);
+            
+            calendar.appendChild(weekRow);
+            
+            // Add half-year total after the last week that contains June 30th
+            if (!hasAddedHalfYear && currentDate > new Date(2025, 5, 30)) {
+                const halfYearDiv = document.createElement('div');
+                halfYearDiv.className = 'half-year-total';
+                halfYearDiv.textContent = 'First Half Year: Calculating...';
+                calendar.appendChild(halfYearDiv);
+                hasAddedHalfYear = true;
+            }
         }
-        
-        const dayElement = document.createElement('div');
-        dayElement.className = 'day';
-        
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `day-${currentDate.toISOString().split('T')[0]}`;
-        
-        // Add change event listener to save state
-        checkbox.addEventListener('change', function() {
-            saveCheckboxState(this.id, this.checked);
-        });
-        
-        const checkboxVisual = document.createElement('span');
-        checkboxVisual.className = 'checkbox-visual';
-        
-        // Gray out days not in 2025
-        if (currentDate.getFullYear() !== year) {
-            dayElement.classList.add('empty');
-        }
-        
-        dayElement.appendChild(checkbox);
-        dayElement.appendChild(checkboxVisual);
-        calendar.appendChild(dayElement);
-        
-        currentDate.setDate(currentDate.getDate() + 1);
     }
-
-    // Load saved states
-    loadSavedStates();
+    
+    // Add year total at the end
+    const yearTotal = document.createElement('div');
+    yearTotal.className = 'year-total';
+    calendar.appendChild(yearTotal);
+    
+    // Load saved states and update totals
+    loadSavedStates().then(() => updateTotals());
 }
 
 function initFirebase() {
@@ -135,6 +167,91 @@ async function saveToGist(data) {
         });
     } catch (error) {
         console.error('Failed to save to Gist:', error);
+    }
+}
+
+function updateTotals() {
+    updateWeekTotals();
+    updateMonthTotals();
+    updateHalfYearTotals();
+    updateYearTotal();
+}
+
+function updateWeekTotals() {
+    const weekRows = document.querySelectorAll('.week-row');
+    weekRows.forEach(row => {
+        const checkboxes = row.querySelectorAll('input[type="checkbox"]');
+        const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+        const total = checkboxes.length;
+        const percentage = (checked / total * 100).toFixed(1);
+        
+        const totalCell = row.querySelector('.total-cell');
+        if (totalCell) {
+            totalCell.textContent = `${checked}/${total} (${percentage}%)`;
+        }
+    });
+}
+
+function updateMonthTotals() {
+    let currentMonth = -1;
+    let monthCheckboxes = [];
+    
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        const date = new Date(checkbox.id.split('-')[1]);
+        
+        if (date.getMonth() !== currentMonth) {
+            if (monthCheckboxes.length > 0) {
+                // Display previous month's total
+                const checked = monthCheckboxes.filter(cb => cb.checked).length;
+                const total = monthCheckboxes.length;
+                const percentage = (checked / total * 100).toFixed(1);
+                
+                const monthName = new Date(currentMonth + 1, 0).toLocaleString('default', { month: 'long' });
+                const monthTotal = document.createElement('div');
+                monthTotal.className = 'month-total';
+                monthTotal.textContent = `${monthName}: ${checked}/${total} (${percentage}%)`;
+                
+                // Insert after the last day of the month
+                const lastDayOfMonth = monthCheckboxes[monthCheckboxes.length - 1].closest('.week-row');
+                lastDayOfMonth.after(monthTotal);
+            }
+            
+            currentMonth = date.getMonth();
+            monthCheckboxes = [];
+        }
+        
+        monthCheckboxes.push(checkbox);
+    });
+}
+
+function updateHalfYearTotals() {
+    const halfYearTotal = document.querySelector('.half-year-total');
+    if (!halfYearTotal) return;
+    
+    // Get all checkboxes that appear before the half-year total element
+    const allCheckboxes = Array.from(document.querySelectorAll('input[type="checkbox"]'));
+    const firstHalf = allCheckboxes.filter(checkbox => {
+        // Check if this checkbox appears before the half-year total in the DOM
+        return checkbox.compareDocumentPosition(halfYearTotal) & Node.DOCUMENT_POSITION_FOLLOWING;
+    });
+    
+    const checked = firstHalf.filter(cb => cb.checked).length;
+    const total = firstHalf.length;
+    const percentage = (checked / total * 100).toFixed(1);
+    
+    halfYearTotal.textContent = `First Half Year Total: ${checked}/${total} (${percentage}%)`;
+}
+
+function updateYearTotal() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+    const total = checkboxes.length;
+    const percentage = (checked / total * 100).toFixed(1);
+    
+    const yearTotal = document.querySelector('.year-total');
+    if (yearTotal) {
+        yearTotal.textContent = `Year Total: ${checked}/${total} (${percentage}%)`;
     }
 }
 

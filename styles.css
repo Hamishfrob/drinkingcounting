@@ -1,42 +1,68 @@
+:root {
+    --color-mauve: #EDC9FF;
+    --color-dark-purple: #210B2C;
+    --color-apricot: #F2B79F;
+    --color-fern: #618B4A;
+    --color-eminence: #55286F;
+    --golden-ratio: 1.618;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    max-width: 1200px;
+    font-family: 'Inter', sans-serif; /* Changed from Montserrat */
+    max-width: calc(800px * var(--golden-ratio));
     margin: 0 auto;
-    padding: 20px;
-    background-color: #e6f3ff;  /* Light blue background */
+    padding: calc(20px * var(--golden-ratio));
+    background-color: var(--color-mauve);
+    color: var(--color-dark-purple);
 }
 
 h1 {
+    font-family: 'Work Sans', sans-serif; /* Changed from Playfair Display */
     text-align: center;
+    color: var(--color-eminence);
+    font-size: calc(1.5rem * var(--golden-ratio));
+    margin-bottom: calc(1rem * var(--golden-ratio));
+    font-weight: 700;
 }
 
 #calendar {
     display: grid;
-    grid-template-columns: auto repeat(7, 1fr);
-    gap: 5px;
+    grid-template-columns: 100px repeat(7, 40px) 100px;
+    gap: 10px;
     overflow-x: auto;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: calc(1rem * var(--golden-ratio));
+    border-radius: 8px;
+    margin: 0 auto;
+    max-width: fit-content;
+}
+
+.week-row {
+    display: contents; /* This makes the row's children participate directly in the grid */
 }
 
 .date-label {
     padding: 10px;
-    text-align: right;
-    background-color: #f8f8f8;
+    text-align: center;
+    background-color: var(--color-apricot);
     border-radius: 4px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    min-width: 80px;
+    justify-content: center;
+    height: 40px;
+    color: var(--color-dark-purple);
 }
 
 .day {
-    aspect-ratio: 1;
-    border: 1px solid #ccc;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-eminence);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    min-width: 40px;
-    min-height: 40px;
+    background-color: white;
 }
 
 .day input[type="checkbox"] {
@@ -51,14 +77,15 @@ h1 {
 .day span.checkbox-visual {
     width: 80%;
     height: 80%;
-    border: 2px solid #ccc;
+    border: 2px solid var(--color-dark-purple);
     border-radius: 4px;
     pointer-events: none;
+    transition: all 0.2s ease;
 }
 
 .day input[type="checkbox"]:checked + span.checkbox-visual {
-    background-color: #4CAF50;
-    border-color: #4CAF50;
+    background-color: #618B4A;
+    border-color: #618B4A;
 }
 
 .day.empty {
@@ -66,10 +93,61 @@ h1 {
 }
 
 .header {
-    font-weight: bold;
+    font-family: 'Work Sans', sans-serif; /* Changed from Montserrat */
+    font-weight: 500;
     padding: 10px;
     text-align: center;
-    background-color: #eee;
+    background-color: var(--color-eminence);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 4px;
+}
+
+.total-cell {
+    padding: 10px;
+    text-align: center;
+    background-color: var(--color-apricot);
+    border-radius: 4px;
+    font-size: 0.9em;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.month-total {
+    padding: calc(0.8rem * var(--golden-ratio));
+    margin: 10px 0;
+    background-color: var(--color-eminence);
+    color: white;
+    border-radius: 4px;
+    text-align: right;
+    grid-column: 1 / -1;
+}
+
+.half-year-total {
+    grid-column: 1 / -1;
+    padding: calc(1rem * var(--golden-ratio));
+    margin: 15px 0;
+    background-color: var(--color-dark-purple);
+    color: white;
+    border-radius: 4px;
+    text-align: right;
+    font-weight: bold;
+}
+
+.year-total {
+    padding: calc(1rem * var(--golden-ratio));
+    margin: 15px 0;
+    background-color: var(--color-eminence);
+    color: white;
+    border-radius: 4px;
+    text-align: right;
+    font-weight: bold;
+    grid-column: 1 / -1;
 }
 
 /* Mobile responsiveness */
@@ -79,17 +157,17 @@ h1 {
     }
 
     #calendar {
-        font-size: 14px;
+        grid-template-columns: 80px repeat(7, 1fr) 80px;
     }
-
-    .date-label {
-        min-width: 60px;
-        padding: 5px;
-    }
-
+    
     .day {
-        min-width: 30px;
-        min-height: 30px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .date-label, .total-cell {
+        height: 30px;
+        padding: 5px;
     }
 
     .header {
