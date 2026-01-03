@@ -1,6 +1,6 @@
-# 2025 Drinking Tracker
+# 2026 Drinking Tracker
 
-A sleek, interactive calendar application designed to track drinking days throughout 2025. The app features an elegant, user-friendly interface with real-time statistics and persistent data storage.
+A sleek, interactive calendar application designed to track drinking days throughout 2026. The app features an elegant, user-friendly interface with real-time statistics and persistent data storage.
 
 ## Features
 
@@ -62,7 +62,7 @@ Works in all modern browsers that support:
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/your-username/2025-drinking-tracker.git
+git clone https://github.com/your-username/2026-drinking-tracker.git
 ```
 2. Open `index.html` in your web browser
 

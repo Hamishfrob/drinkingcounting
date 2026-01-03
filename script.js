@@ -1,6 +1,6 @@
 function createCalendar() {
     const calendar = document.getElementById('calendar');
-    const year = 2025;
+    const year = 2026;
     
     // Add headers
     const dateHeader = document.createElement('div');
@@ -91,7 +91,7 @@ function createCalendar() {
             calendar.appendChild(weekRow);
             
             // Add half-year total after the last week that contains June 30th
-            if (!hasAddedHalfYear && currentDate > new Date(2025, 5, 30)) {
+            if (!hasAddedHalfYear && currentDate > new Date(2026, 5, 30)) {
                 const halfYearDiv = document.createElement('div');
                 halfYearDiv.className = 'half-year-total';
                 halfYearDiv.textContent = 'First Half Year: Calculating...';
@@ -129,11 +129,11 @@ function initFirebase() {
 function saveCheckboxState(id, checked) {
     const savedStates = getSavedStates();
     savedStates[id] = checked;
-    localStorage.setItem('drinkingDays2025', JSON.stringify(savedStates));
+    localStorage.setItem('drinkingDays2026', JSON.stringify(savedStates));
 }
 
 function getSavedStates() {
-    const saved = localStorage.getItem('drinkingDays2025');
+    const saved = localStorage.getItem('drinkingDays2026');
     return saved ? JSON.parse(saved) : {};
 }
 
@@ -261,5 +261,17 @@ function updateYearTotal() {
     }
 }
 
+// Clear old localStorage data from previous years for fresh start
+function clearOldData() {
+    // Remove old 2025 data if it exists
+    if (localStorage.getItem('drinkingDays2025')) {
+        localStorage.removeItem('drinkingDays2025');
+    }
+    // You can add more years here as needed in the future
+}
+
 // Initialize calendar when page loads
-document.addEventListener('DOMContentLoaded', createCalendar); 
+document.addEventListener('DOMContentLoaded', function() {
+    clearOldData();
+    createCalendar();
+}); 
